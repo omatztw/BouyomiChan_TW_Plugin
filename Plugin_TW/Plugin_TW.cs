@@ -128,7 +128,7 @@ namespace Plugin_TW
                 Message message = DeserializeToMessage(ConvertLineToXml(line));
                 Content content = (message.Contents.ToArray())[1];
 
-                if(IsDisplayed(content))
+                if(IsDisplayed(content) && content.Text != null)
                 {
                     Pub.AddTalkTask(content.Text, -1, -1, VoiceType.Default);
                 }
