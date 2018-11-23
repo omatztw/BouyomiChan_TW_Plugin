@@ -246,8 +246,8 @@ namespace Plugin_TW
             public bool TeamEnabled = true;
             public bool ClubEnabled = true;
             public string ChatLogDir = @"C:\Nexon\TalesWeaver\ChatLog";
-            public string[] Includes;
-            public string[] Excludes;
+            public string[] Includes = new string[] { };
+            public string[] Excludes = new string[] { };
 
             //ì¬Œ³ƒvƒ‰ƒOƒCƒ“
             internal Plugin_TW Plugin;
