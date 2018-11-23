@@ -75,8 +75,8 @@ namespace Plugin_TW
         /// <returns></returns>
         private string ConvertLineToXml(string line)
         {
-            string xml = string.Format("<message>{0}</message>", line.Replace("</br>", ""));
-
+            // </br>‚Æ&nbsp‚Íœ‹‚·‚é
+            string xml = string.Format("<message>{0}</message>", line.Replace("</br>", "").Replace(@"&nbsp", ""));
             return xml;
 
         }
