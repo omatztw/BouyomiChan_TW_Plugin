@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Xml.Serialization;
 using System.ComponentModel;
@@ -135,14 +136,24 @@ namespace Plugin_TW
             }
         }
 
-        private Boolean IsDisplayed(Content font)
+        private Boolean IsDisplayed(Content content)
         {
-            if(_Settings.ClubEnabled && IsClub(font))
+            if(Includes(content))
             {
                 return true;
             }
 
-            if (_Settings.TeamEnabled && IsTeam(font))
+            if(Excludes(content))
+            {
+                return false;
+            }
+
+            if(_Settings.ClubEnabled && IsClub(content))
+            {
+                return true;
+            }
+
+            if (_Settings.TeamEnabled && IsTeam(content))
             {
                 return true;
             }
@@ -158,6 +169,30 @@ namespace Plugin_TW
         private Boolean IsTeam(Content font)
         {
             return font.Color == TEAM_COLOR;
+        }
+
+        private Boolean Includes(Content content)
+        {
+            foreach (var include in _Settings.Includes)
+            {
+                if(Regex.IsMatch(content.Text, include))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private Boolean Excludes(Content content)
+        {
+            foreach (var exclude in _Settings.Excludes)
+            {
+                if(Regex.IsMatch(content.Text, exclude))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -211,6 +246,8 @@ namespace Plugin_TW
             public bool TeamEnabled = true;
             public bool ClubEnabled = true;
             public string ChatLogDir = @"C:\Nexon\TalesWeaver\ChatLog";
+            public string[] Includes;
+            public string[] Excludes;
 
             //作成元プラグイン
             internal Plugin_TW Plugin;
@@ -264,7 +301,23 @@ namespace Plugin_TW
                 [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
                 public string ChatLogDir { get { return _Setting.ChatLogDir; } set { _Setting.ChatLogDir = value; } }
 
+                [Category("ワード設定")]
+                [DisplayName("特別ワードの設定")]
+                [Description("必ず読み上げるワードを設定します。")]
+                public string[] Includes { get { return _Setting.Includes; } set { _Setting.Includes = value; } }
+
+                [Category("ワード設定")]
+                [DisplayName("除外ワードの設定")]
+                [Description("除外するワードを設定します。")]
+                public string[] Excludes { get { return _Setting.Excludes; } set { _Setting.Excludes = value; } }
+
             }
+        }
+
+        public class Word
+        {
+            public string value { get; set; }
+
         }
 
         [System.Xml.Serialization.XmlRoot("message")]
