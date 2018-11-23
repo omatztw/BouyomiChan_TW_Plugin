@@ -83,21 +83,9 @@ namespace Plugin_TW
 
         private Message DeserializeToMessage(string xml)
         {
-            string dummy = @"<message><font size=""2"" color=""white""></font> <font size=""2"" color=""#ff6464"">dummy</font></message>";
 
             XmlSerializer serializer = new XmlSerializer(typeof(Message));
-            Message message;
-            try
-            {
-                message = (Message)serializer.Deserialize(new StringReader(xml));
-
-            }
-            catch
-            {
-                message = (Message)serializer.Deserialize(new StringReader(dummy));
-            }
-
-
+            Message message = (Message)serializer.Deserialize(new StringReader(xml));
             return message;
         }
 
@@ -123,24 +111,27 @@ namespace Plugin_TW
         //タイマイベント
         private void Timer_Event(object obj) {
             string filename = GetChatLogFileName();
-            List<string> lines = new List<string>();
-            if (!File.Exists(filename))
-            {
-                // ファイルが存在しない場合は、スキップ
-                return;
-            }
 
             // 最後に読み込んだ箇所から新規追加された文章を読み込む
-            lines = GetLinesFromLastLine(filename);
+            List<string> lines = GetLinesFromLastLine(filename);
+
             foreach (string line in lines)
             {
-                Message message = DeserializeToMessage(ConvertLineToXml(line));
-                Content content = (message.Contents.ToArray())[1];
-
-                if(IsDisplayed(content) && content.Text != null)
+                try
                 {
-                    Pub.AddTalkTask(content.Text, -1, -1, VoiceType.Default);
+                    Message message = DeserializeToMessage(ConvertLineToXml(line));
+                    Content[] contents = message.Contents.ToArray();
+                    Content content = contents[1];
+
+                    if (IsDisplayed(content))
+                    {
+                        Pub.AddTalkTask(content.Text, -1, -1, VoiceType.Default);
+                    }
+                } catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
                 }
+
             }
         }
 
@@ -194,15 +185,12 @@ namespace Plugin_TW
                         {
                             lines.Add(line);
                             _CurrentPosition = fs.Position;
-                            Console.WriteLine(_CurrentPosition);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                // Let the user know what went wrong.
-                Console.WriteLine("The file could not be read:");
                 Console.WriteLine(e.Message);
             }
             return lines;
@@ -258,7 +246,7 @@ namespace Plugin_TW
             public class SBase : ISettingPropertyGrid {
                 Settings _Setting;
                 public SBase(Settings setting) { _Setting = setting; }
-                public string GetName() { return "TW読み上げ設定"; }
+                public string GetName() { return "TWチャット読み上げ設定"; }
 
                 [Category("基本設定")]
                 [DisplayName("クラブチャット読み上げを有効にする")]
