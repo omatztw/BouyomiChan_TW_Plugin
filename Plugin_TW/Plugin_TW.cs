@@ -75,10 +75,7 @@ namespace Plugin_TW
         /// <returns></returns>
         private string ConvertLineToXml(string line)
         {
-            string xml = @"<message><font size=""2"" color=""white""></font> <font size=""2"" color=""#ff6464"">dummy</font></message>";
-            try {
-                xml = string.Format("<message>{0}</message>", line.Replace("</br>", ""));
-            } catch  {  }
+            string xml = string.Format("<message>{0}</message>", line.Replace("</br>", ""));
 
             return xml;
 
@@ -86,9 +83,20 @@ namespace Plugin_TW
 
         private Message DeserializeToMessage(string xml)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(Message));
+            string dummy = @"<message><font size=""2"" color=""white""></font> <font size=""2"" color=""#ff6464"">dummy</font></message>";
 
-            Message message = (Message)serializer.Deserialize(new StringReader(xml));
+            XmlSerializer serializer = new XmlSerializer(typeof(Message));
+            Message message;
+            try
+            {
+                message = (Message)serializer.Deserialize(new StringReader(xml));
+
+            }
+            catch
+            {
+                message = (Message)serializer.Deserialize(new StringReader(dummy));
+            }
+
 
             return message;
         }
