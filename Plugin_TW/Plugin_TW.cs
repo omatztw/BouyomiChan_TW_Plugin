@@ -103,6 +103,10 @@ namespace Plugin_TW
 
         private long GetFileLength(string filename)
         {
+            if(!File.Exists(filename))
+            {
+                return 0;
+            }
             FileInfo file = new FileInfo(filename);
             return file.Length;
 
