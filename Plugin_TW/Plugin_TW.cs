@@ -120,6 +120,11 @@ namespace Plugin_TW
         private void Timer_Event(object obj) {
             string filename = GetChatLogFileName();
             List<string> lines = new List<string>();
+            if (!File.Exists(filename))
+            {
+                // ファイルが存在しない場合は、スキップ
+                return;
+            }
 
             // 最後に読み込んだ箇所から新規追加された文章を読み込む
             lines = GetLinesFromLastLine(filename);
