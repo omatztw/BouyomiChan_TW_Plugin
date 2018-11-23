@@ -13,7 +13,7 @@ Tales Weaverのチャットログを棒読みちゃんに読ませるプラグ�
 
 ### プラグインの登録
 
-[Plugin_TW.dll](dist/Plugin_TW.dll)を棒読みちゃんのフォルダに置くだけ
+[Releaseページ](https://github.com/omatztw/BouyomiChan_TW_Plugin/releases)より、Plugin_TW.dllをダウンロードし、棒読みちゃんのフォルダに置くだけ
 
 ### 設定
 
