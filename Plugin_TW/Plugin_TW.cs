@@ -104,7 +104,7 @@ namespace Plugin_TW
         private string GetChatLogFileName()
         {
             DateTime now = DateTime.Now;
-            string today = string.Format(@"{0}_{1}_{2}", now.Year, now.Month, now.Day);
+            string today = string.Format(@"{0:D4}_{1:D2}_{2:D2}", now.Year, now.Month, now.Day);
             string filename = string.Format(@"{0}\TWChatLog_{1}.html", _Settings.ChatLogDir, today);
             return filename;
         }
