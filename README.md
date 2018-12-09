@@ -11,6 +11,8 @@ Tales Weaverのチャットログを棒読みちゃんに読ませるプラグ�
 * [棒読みちゃんのダウンロード](http://chi.usamimi.info/Program/Application/BouyomiChan/)
 * TWチャットログ機能の有効化
 
+![チャットログ有効化](chat_log.png)
+
 ### プラグインの登録
 
 [Releaseページ](https://github.com/omatztw/BouyomiChan_TW_Plugin/releases)より、Plugin_TW.dllをダウンロードし、棒読みちゃんのフォルダ（BouyomiChan.exe があるところ）に置くだけ
@@ -48,7 +50,7 @@ Tales Weaverのチャットログを棒読みちゃんに読ませるプラグ�
 
 `\[`のように、`\`(画像では￥)を入れているのは、正規表現における特殊文字をエスケープするため。  
 正規表現を詳しく知りたい人は「正規表現　入門」などでググってみると幸せになれるかも！  
-注：「クールタイム」はアルカナタワー用です
+注：「クールタイム」は別の用途です。
 
 
 ## Developer
