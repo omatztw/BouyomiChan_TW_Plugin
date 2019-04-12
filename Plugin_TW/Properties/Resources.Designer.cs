@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Plugin_Zihou.Properties {
+namespace Plugin_TW.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Plugin_Zihou.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Plugin_Zihou.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Plugin_TW.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -66,16 +66,6 @@ namespace Plugin_Zihou.Properties {
         internal static System.Drawing.Bitmap ImgTW {
             get {
                 object obj = ResourceManager.GetObject("ImgTW", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
-        /// </summary>
-        internal static System.Drawing.Bitmap ImgZihou {
-            get {
-                object obj = ResourceManager.GetObject("ImgZihou", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

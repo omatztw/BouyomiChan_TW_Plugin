@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Xml.Serialization;
 using System.ComponentModel;
+using System.Linq;
 using FNF.Utility;
 using FNF.XmlSerializerSetting;
 using FNF.BouyomiChanApp;
@@ -31,9 +32,9 @@ namespace Plugin_TW
 
         public string           Name            { get { return "TWチャット読み上げ"; } }
 
-        public string           Version         { get { return "2018.11"; } }
+        public string           Version         { get { return "2019.04"; } }
 
-        public string           Caption         { get { return "TWチャット読み上げ"; } } 
+        public string           Caption         { get { return "TWチャット読み上げ"; } }
 
         public ISettingFormData SettingFormData { get { return _SettingFormData; } } //プラグインの設定画面情報
 
@@ -126,6 +127,7 @@ namespace Plugin_TW
 
                     if (IsDisplayed(content))
                     {
+                        CalcSpecialQA(content);
                         Pub.AddTalkTask(content.Text, -1, -1, VoiceType.Default);
                     }
                 } catch (Exception e)
@@ -133,6 +135,24 @@ namespace Plugin_TW
                     Console.WriteLine(e.Message);
                 }
 
+            }
+        }
+
+        private void CalcSpecialQA(Content content)
+        {
+            Regex re = new Regex("q(?<question>[0-9]+)a(?<answer>[0-9]+)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            if (re.IsMatch(content.Text))
+            {
+                Match m = re.Match(content.Text);
+                int target = int.Parse(m.Groups["question"].Value);
+                string answer = m.Groups["answer"].Value;
+                List<int> numbers = new List<int>();
+                for (int i = 0; i < answer.Length; i++)
+                {
+                    numbers.Add(int.Parse(answer[i].ToString()));
+                }
+
+                content.Text = SumUp(numbers, target);
             }
         }
 
@@ -229,6 +249,42 @@ namespace Plugin_TW
                 Console.WriteLine(e.Message);
             }
             return lines;
+
+        }
+
+        private string SumUp(List<int> numbers, int target)
+        {
+            return SumUpRecursive(numbers, target, new List<int>());
+
+        }
+
+        private string SumUpRecursive(List<int> numbers, int target, List<int> partial)
+        {
+            int s = 0;
+            string ans;
+            foreach (int x in partial) s += x;
+
+            if (s == target)
+            {
+                return string.Join(",", partial.Select(x => x.ToString()).ToArray());
+            }
+
+            if (s >= target) return string.Empty;
+
+            for (int i = 0; i < numbers.Count; i++)
+            {
+                List<int> remaining = new List<int>();
+                int n = numbers[i];
+                for (int j = i + 1; j < numbers.Count; j++) remaining.Add(numbers[j]);
+                List<int> partial_rec = new List<int>(partial);
+                partial_rec.Add(n);
+                ans = SumUpRecursive(remaining, target, partial_rec);
+                if(!string.IsNullOrEmpty(ans))
+                {
+                    return ans;
+                }
+;            }
+            return string.Empty;
 
         }
 
