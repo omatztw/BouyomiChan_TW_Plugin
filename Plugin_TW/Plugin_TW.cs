@@ -12,13 +12,14 @@ using FNF.BouyomiChanApp;
 
 namespace Plugin_TW
 {
-    public class Plugin_TW : IPlugin {
+    public class Plugin_TW : IPlugin
+    {
         #region ■フィールド
 
-        private Settings         _Settings;                                                       //設定
-        private SettingFormData_TW  _SettingFormData;
-        private string                 _SettingFile = Base.CallAsmPath + Base.CallAsmName + ".setting"; //設定ファイルの保存場所
-        private System.Threading.Timer _Timer;          
+        private Settings _Settings;                                                       //設定
+        private SettingFormData_TW _SettingFormData;
+        private string _SettingFile = Base.CallAsmPath + Base.CallAsmName + ".setting"; //設定ファイルの保存場所
+        private System.Threading.Timer _Timer;
         private long _CurrentPosition = 0;
 
         private const string CLUB_COLOR = @"#94ddfa";
@@ -30,16 +31,17 @@ namespace Plugin_TW
 
         #region ■IPluginメンバの実装
 
-        public string           Name            { get { return "TWチャット読み上げ"; } }
+        public string Name { get { return "TWチャット読み上げ"; } }
 
-        public string           Version         { get { return "2019.04"; } }
+        public string Version { get { return "2019.04"; } }
 
-        public string           Caption         { get { return "TWチャット読み上げ"; } }
+        public string Caption { get { return "TWチャット読み上げ"; } }
 
         public ISettingFormData SettingFormData { get { return _SettingFormData; } } //プラグインの設定画面情報
 
         //プラグイン開始時処理
-        public void Begin() {
+        public void Begin()
+        {
             //設定ファイル読み込み
             _Settings = new Settings(this);
             _Settings.Load(_SettingFile);
@@ -53,12 +55,14 @@ namespace Plugin_TW
         }
 
         //プラグイン終了時処理
-        public void End() {
+        public void End()
+        {
             //設定ファイル保存
             _Settings.Save(_SettingFile);
 
             //タイマ開放
-            if (_Timer != null) {
+            if (_Timer != null)
+            {
                 _Timer.Dispose();
                 _Timer = null;
             }
@@ -93,7 +97,7 @@ namespace Plugin_TW
 
         private long GetFileLength(string filename)
         {
-            if(!File.Exists(filename))
+            if (!File.Exists(filename))
             {
                 return 0;
             }
@@ -111,7 +115,8 @@ namespace Plugin_TW
         }
 
         //タイマイベント
-        private void Timer_Event(object obj) {
+        private void Timer_Event(object obj)
+        {
             string filename = GetChatLogFileName();
 
             // 最後に読み込んだ箇所から新規追加された文章を読み込む
@@ -130,7 +135,8 @@ namespace Plugin_TW
                         CalcSpecialQA(content);
                         Pub.AddTalkTask(content.Text, -1, -1, VoiceType.Default);
                     }
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
@@ -158,17 +164,17 @@ namespace Plugin_TW
 
         private Boolean IsDisplayed(Content content)
         {
-            if(Includes(content))
+            if (Includes(content))
             {
                 return true;
             }
 
-            if(Excludes(content))
+            if (Excludes(content))
             {
                 return false;
             }
 
-            if(_Settings.ClubEnabled && IsClub(content))
+            if (_Settings.ClubEnabled && IsClub(content))
             {
                 return true;
             }
@@ -195,7 +201,7 @@ namespace Plugin_TW
         {
             foreach (var include in _Settings.Includes)
             {
-                if(Regex.IsMatch(content.Text, include))
+                if (Regex.IsMatch(content.Text, include))
                 {
                     return true;
                 }
@@ -207,7 +213,7 @@ namespace Plugin_TW
         {
             foreach (var exclude in _Settings.Excludes)
             {
-                if(Regex.IsMatch(content.Text, exclude))
+                if (Regex.IsMatch(content.Text, exclude))
                 {
                     return true;
                 }
@@ -279,11 +285,11 @@ namespace Plugin_TW
                 List<int> partial_rec = new List<int>(partial);
                 partial_rec.Add(n);
                 ans = SumUpRecursive(remaining, target, partial_rec);
-                if(!string.IsNullOrEmpty(ans))
+                if (!string.IsNullOrEmpty(ans))
                 {
                     return ans;
                 }
-;            }
+            }
             return string.Empty;
 
         }
@@ -322,21 +328,24 @@ namespace Plugin_TW
         }
 
         // 設定画面表示用クラス
-        public class SettingFormData_TW : ISettingFormData {
+        public class SettingFormData_TW : ISettingFormData
+        {
             Settings _Setting;
 
-            public string       Title     { get { return _Setting.Plugin.Name; } }
-            public bool         ExpandAll { get { return false; } }
-            public SettingsBase Setting   { get { return _Setting; } }
+            public string Title { get { return _Setting.Plugin.Name; } }
+            public bool ExpandAll { get { return false; } }
+            public SettingsBase Setting { get { return _Setting; } }
 
-            public SettingFormData_TW(Settings setting) {
+            public SettingFormData_TW(Settings setting)
+            {
                 _Setting = setting;
-                PBase    = new SBase(_Setting);
+                PBase = new SBase(_Setting);
             }
 
             //設定画面で表示されるクラス(ISettingPropertyGrid)
             public SBase PBase;
-            public class SBase : ISettingPropertyGrid {
+            public class SBase : ISettingPropertyGrid
+            {
                 Settings _Setting;
                 public SBase(Settings setting) { _Setting = setting; }
                 public string GetName() { return "TWチャット読み上げ設定"; }
@@ -347,7 +356,7 @@ namespace Plugin_TW
                 public bool ClubEnabled { get { return _Setting.ClubEnabled; } set { _Setting.ClubEnabled = value; } }
 
 
-                [Category   ("基本設定")]
+                [Category("基本設定")]
                 [DisplayName("チームチャット読み上げを有効にする")]
                 [Description("チームチャットの内容を読み上げます。")]
                 public bool TeamEnabled { get { return _Setting.TeamEnabled; } set { _Setting.TeamEnabled = value; } }
