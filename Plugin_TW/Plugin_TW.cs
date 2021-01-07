@@ -24,6 +24,10 @@ namespace Plugin_TW
 
         private const string CLUB_COLOR = @"#94ddfa";
         private const string TEAM_COLOR = @"#f7b73c";
+        private const string SYSTEM_COLOR = @"#ff64ff";
+        private const string GENERAL_COLOR = @"#c8ffc8";
+        private const string DM_COLOR = @"#64ff64";
+        private const string MANAGEMENT_COLOR = @"#64ff80";
 
 
         #endregion
@@ -33,7 +37,7 @@ namespace Plugin_TW
 
         public string Name { get { return "TWチャット読み上げ"; } }
 
-        public string Version { get { return "2019.04"; } }
+        public string Version { get { return "2021.01"; } }
 
         public string Caption { get { return "TWチャット読み上げ"; } }
 
@@ -110,7 +114,7 @@ namespace Plugin_TW
         {
             DateTime now = DateTime.Now;
             string today = string.Format(@"{0:D4}_{1:D2}_{2:D2}", now.Year, now.Month, now.Day);
-            string filename = string.Format(@"{0}\TWChatLog_{1}.html", _Settings.ChatLogDir, today);
+            string filename = string.Format(@"{0}\ChatLog\TWChatLog_{1}.html", _Settings.RootDir, today);
             return filename;
         }
 
@@ -183,6 +187,22 @@ namespace Plugin_TW
             {
                 return true;
             }
+            if (_Settings.SystemEnabled && IsSystem(content))
+            {
+                return true;
+            }
+            if (_Settings.AdminEnabled && IsAdmin(content))
+            {
+                return true;
+            }
+            if (_Settings.DMEnabled && IsDM(content))
+            {
+                return true;
+            }
+            if (_Settings.GeneralEnabled && IsGeneral(content))
+            {
+                return true;
+            }
 
             return false;
         }
@@ -195,6 +215,23 @@ namespace Plugin_TW
         private Boolean IsTeam(Content font)
         {
             return font.Color == TEAM_COLOR;
+        }
+        private Boolean IsGeneral(Content font)
+        {
+            return font.Color == GENERAL_COLOR;
+        }
+
+        private Boolean IsSystem(Content font)
+        {
+            return font.Color == SYSTEM_COLOR;
+        }
+        private Boolean IsAdmin(Content font)
+        {
+            return font.Color == MANAGEMENT_COLOR;
+        }
+        private Boolean IsDM(Content font)
+        {
+            return font.Color == DM_COLOR;
         }
 
         private Boolean Includes(Content content)
@@ -307,7 +344,12 @@ namespace Plugin_TW
             //保存される情報（設定画面からも参照される）
             public bool TeamEnabled = true;
             public bool ClubEnabled = true;
-            public string ChatLogDir = @"C:\Nexon\TalesWeaver\ChatLog";
+            public bool GeneralEnabled = false;
+            public bool DMEnabled = true;
+            public bool SystemEnabled = false;
+            public bool AdminEnabled = false;
+            // public string ChatLogDir = @"C:\Nexon\TalesWeaver\ChatLog";
+            public string RootDir = @"C:\Nexon\TalesWeaver";
             public string[] Includes = new string[] { };
             public string[] Excludes = new string[] { };
 
@@ -351,20 +393,46 @@ namespace Plugin_TW
                 public string GetName() { return "TWチャット読み上げ設定"; }
 
                 [Category("基本設定")]
-                [DisplayName("クラブチャット読み上げを有効にする")]
+                [DisplayName("01) クラブチャット読み上げを有効にする")]
                 [Description("クラブチャットの内容を読み上げます。")]
                 public bool ClubEnabled { get { return _Setting.ClubEnabled; } set { _Setting.ClubEnabled = value; } }
 
 
                 [Category("基本設定")]
-                [DisplayName("チームチャット読み上げを有効にする")]
+                [DisplayName("02) チームチャット読み上げを有効にする")]
                 [Description("チームチャットの内容を読み上げます。")]
                 public bool TeamEnabled { get { return _Setting.TeamEnabled; } set { _Setting.TeamEnabled = value; } }
 
                 [Category("基本設定")]
-                [DisplayName("チャットログのあるフォルダを選択")]
+                [DisplayName("04) 耳打ち読み上げを有効にする")]
+                [Description("耳打ちの内容を読み上げます。")]
+                public bool DMEnabled { get { return _Setting.DMEnabled; } set { _Setting.DMEnabled = value; } }
+
+                [Category("基本設定")]
+                [DisplayName("03) 一般チャット読み上げを有効にする")]
+                [Description("一般チャットの内容を読み上げます。")]
+                public bool GeneralEnabled { get { return _Setting.GeneralEnabled; } set { _Setting.GeneralEnabled = value; } }
+
+                [Category("基本設定")]
+                [DisplayName("05) システムメッセージの読み上げを有効にする")]
+                [Description("システムメッセージの内容を読み上げます。")]
+                public bool SystemEnabled { get { return _Setting.SystemEnabled; } set { _Setting.SystemEnabled = value; } }
+
+                [Category("基本設定")]
+                [DisplayName("06) 管理用メッセージの読み上げを有効にする")]
+                [Description("管理用メッセージの内容を読み上げます。")]
+                public bool AdminEnabled { get { return _Setting.AdminEnabled; } set { _Setting.AdminEnabled = value; } }
+
+                // [Category("基本設定")]
+                // [DisplayName("チャットログのあるフォルダを選択")]
+                // [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
+                // public string ChatLogDir { get { return _Setting.ChatLogDir; } set { _Setting.ChatLogDir = value; } }
+
+                [Category("基本設定")]
+                [DisplayName("00) TWフォルダを選択")]
                 [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
-                public string ChatLogDir { get { return _Setting.ChatLogDir; } set { _Setting.ChatLogDir = value; } }
+                public string RootDir { get { return _Setting.RootDir; } set { _Setting.RootDir = value; } }
+
 
                 [Category("ワード設定")]
                 [DisplayName("特別ワードの設定")]
