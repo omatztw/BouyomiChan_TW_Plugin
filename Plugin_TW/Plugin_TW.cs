@@ -145,6 +145,10 @@ namespace Plugin_TW
 
                     if (IsDisplayed(content))
                     {
+                        if (!_Settings.ReadSpeakerName)
+                        {
+                            TrimSpeakerName(content);
+                        }
                         CalcSpecialQA(content);
                         Pub.AddTalkTask(content.Text, -1, -1, VoiceType.Default);
                     }
@@ -173,6 +177,11 @@ namespace Plugin_TW
 
                 content.Text = SumUp(numbers, target);
             }
+        }
+
+        private void TrimSpeakerName(Content content) 
+        {
+            content.Text = Regex.Replace(content.Text, "^[^:]+ :", String.Empty);
         }
 
         private Boolean IsDisplayed(Content content)
@@ -379,6 +388,7 @@ namespace Plugin_TW
             public bool SystemEnabled = false;
             public bool AdminEnabled = false;
             public bool OwnChatEnabled = true;
+            public bool ReadSpeakerName = true;
             // public string ChatLogDir = @"C:\Nexon\TalesWeaver\ChatLog";
             public string RootDir = @"C:\Nexon\TalesWeaver";
             public string[] Includes = new string[] { };
@@ -458,6 +468,11 @@ namespace Plugin_TW
                 [DisplayName("07) 自分の発言の読み上げを有効にする")]
                 [Description("自分の発言内容を読み上げます。")]
                 public bool OwnChatEnabled { get { return _Setting.OwnChatEnabled; } set { _Setting.OwnChatEnabled = value; } }
+
+                [Category("基本設定")]
+                [DisplayName("08) 発言者の名前を読み上げる。")]
+                [Description("発言者の名前を読み上げます。")]
+                public bool ReadSpeakerName { get { return _Setting.ReadSpeakerName; } set { _Setting.ReadSpeakerName = value; } }
 
                 // [Category("基本設定")]
                 // [DisplayName("チャットログのあるフォルダを選択")]
