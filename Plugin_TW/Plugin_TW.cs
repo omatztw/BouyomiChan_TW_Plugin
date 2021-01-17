@@ -37,7 +37,7 @@ namespace Plugin_TW
 
         public string Name { get { return "TWチャット読み上げ"; } }
 
-        public string Version { get { return "2021.01"; } }
+        public string Version { get { return "2021.01.17"; } }
 
         public string Caption { get { return "TWチャット読み上げ"; } }
 
@@ -118,6 +118,15 @@ namespace Plugin_TW
             return filename;
         }
 
+        private CharInfo GetCurrentCharInfo() 
+        {
+            string file = Directory.GetFiles(_Settings.RootDir, "*.profile").OrderByDescending(f => File.GetLastWriteTime(f)).First();
+            CharInfo charInfo =  new CharInfo();
+            charInfo.ServerName = Path.GetFileName(file).Split('_')[0];
+            charInfo.CharName = Path.GetFileName(file).Split('_')[1].Split('.')[0];
+            return charInfo;
+        }
+
         //タイマイベント
         private void Timer_Event(object obj)
         {
@@ -177,7 +186,19 @@ namespace Plugin_TW
             {
                 return false;
             }
+            Boolean isDisplayedByChatType = CheckChatTypeIsDisplayed(content);
+            if (isDisplayedByChatType) { 
+                if (IsOwnChat(content)) {
+                    return _Settings.OwnChatEnabled;
+                }
+                return true;
+            }
+            return false;
 
+        }
+
+        private Boolean CheckChatTypeIsDisplayed(Content content)
+        {
             if (_Settings.ClubEnabled && IsClub(content))
             {
                 return true;
@@ -232,6 +253,15 @@ namespace Plugin_TW
         private Boolean IsDM(Content font)
         {
             return font.Color == DM_COLOR;
+        }
+        private Boolean IsOwnChat(Content content)
+        {
+            CharInfo charInfo = GetCurrentCharInfo();
+            if (content.Text.Trim().Contains(charInfo.CharName + " :"))
+            {
+                return true;
+            }
+            return false;
         }
 
         private Boolean Includes(Content content)
@@ -348,6 +378,7 @@ namespace Plugin_TW
             public bool DMEnabled = true;
             public bool SystemEnabled = false;
             public bool AdminEnabled = false;
+            public bool OwnChatEnabled = true;
             // public string ChatLogDir = @"C:\Nexon\TalesWeaver\ChatLog";
             public string RootDir = @"C:\Nexon\TalesWeaver";
             public string[] Includes = new string[] { };
@@ -423,6 +454,11 @@ namespace Plugin_TW
                 [Description("管理用メッセージの内容を読み上げます。")]
                 public bool AdminEnabled { get { return _Setting.AdminEnabled; } set { _Setting.AdminEnabled = value; } }
 
+                [Category("基本設定")]
+                [DisplayName("07) 自分の発言の読み上げを有効にする")]
+                [Description("自分の発言内容を読み上げます。")]
+                public bool OwnChatEnabled { get { return _Setting.OwnChatEnabled; } set { _Setting.OwnChatEnabled = value; } }
+
                 // [Category("基本設定")]
                 // [DisplayName("チャットログのあるフォルダを選択")]
                 // [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
@@ -470,6 +506,13 @@ namespace Plugin_TW
 
             [System.Xml.Serialization.XmlText()]
             public string Text { get; set; }
+        }
+
+        public class CharInfo
+        {
+            public string ServerName { get; set; }
+
+            public string CharName { get; set; }
         }
 
         #endregion
