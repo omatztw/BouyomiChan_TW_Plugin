@@ -47,6 +47,7 @@ Tales Weaverのチャットログを棒読みちゃんに読ませるプラグ�
 |チームチャット|True|
 |一般チャット|False|
 |耳打ち|True|
+|GMの発言|True|
 |システムメッセージ|False|
 |管理用メッセージ|False|
 
