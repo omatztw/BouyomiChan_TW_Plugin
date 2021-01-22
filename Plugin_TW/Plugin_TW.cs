@@ -25,7 +25,9 @@ namespace Plugin_TW
         private const string CLUB_COLOR = @"#94ddfa";
         private const string TEAM_COLOR = @"#f7b73c";
         private const string SYSTEM_COLOR = @"#ff64ff";
-        private const string GENERAL_COLOR = @"#c8ffc8";
+        private const string GENERAL_COLOR = @"#ffffff";
+        private const string GENERAL_OWN_COLOR = @"#c8ffc8";
+        private const string GM_COLOR = @"#c8ffff";
         private const string DM_COLOR = @"#64ff64";
         private const string MANAGEMENT_COLOR = @"#64ff80";
 
@@ -37,7 +39,7 @@ namespace Plugin_TW
 
         public string Name { get { return "TWチャット読み上げ"; } }
 
-        public string Version { get { return "2021.01.17"; } }
+        public string Version { get { return "2021.01.22"; } }
 
         public string Caption { get { return "TWチャット読み上げ"; } }
 
@@ -233,7 +235,10 @@ namespace Plugin_TW
             {
                 return true;
             }
-
+            if (_Settings.GMEnabled && IsGM(content))
+            {
+                return true;
+            }
             return false;
         }
 
@@ -248,7 +253,12 @@ namespace Plugin_TW
         }
         private Boolean IsGeneral(Content font)
         {
-            return font.Color == GENERAL_COLOR;
+            return font.Color == GENERAL_COLOR || font.Color == GENERAL_OWN_COLOR;
+        }
+
+        private Boolean IsGM(Content font)
+        {
+            return font.Color == GM_COLOR;
         }
 
         private Boolean IsSystem(Content font)
@@ -385,6 +395,7 @@ namespace Plugin_TW
             public bool ClubEnabled = true;
             public bool GeneralEnabled = false;
             public bool DMEnabled = true;
+            public bool GMEnabled = true;
             public bool SystemEnabled = false;
             public bool AdminEnabled = false;
             public bool OwnChatEnabled = true;
@@ -454,25 +465,31 @@ namespace Plugin_TW
                 [Description("一般チャットの内容を読み上げます。")]
                 public bool GeneralEnabled { get { return _Setting.GeneralEnabled; } set { _Setting.GeneralEnabled = value; } }
 
+
                 [Category("基本設定")]
-                [DisplayName("05) システムメッセージの読み上げを有効にする")]
+                [DisplayName("06) システムメッセージの読み上げを有効にする")]
                 [Description("システムメッセージの内容を読み上げます。")]
                 public bool SystemEnabled { get { return _Setting.SystemEnabled; } set { _Setting.SystemEnabled = value; } }
 
                 [Category("基本設定")]
-                [DisplayName("06) 管理用メッセージの読み上げを有効にする")]
+                [DisplayName("07) 管理用メッセージの読み上げを有効にする")]
                 [Description("管理用メッセージの内容を読み上げます。")]
                 public bool AdminEnabled { get { return _Setting.AdminEnabled; } set { _Setting.AdminEnabled = value; } }
 
                 [Category("基本設定")]
-                [DisplayName("07) 自分の発言の読み上げを有効にする")]
+                [DisplayName("08) 自分の発言の読み上げを有効にする")]
                 [Description("自分の発言内容を読み上げます。")]
                 public bool OwnChatEnabled { get { return _Setting.OwnChatEnabled; } set { _Setting.OwnChatEnabled = value; } }
 
                 [Category("基本設定")]
-                [DisplayName("08) 発言者の名前を読み上げる。")]
+                [DisplayName("09) 発言者の名前を読み上げる。")]
                 [Description("発言者の名前を読み上げます。")]
                 public bool ReadSpeakerName { get { return _Setting.ReadSpeakerName; } set { _Setting.ReadSpeakerName = value; } }
+
+                [Category("基本設定")]
+                [DisplayName("05) GMのチャット読み上げを有効にする")]
+                [Description("GMの発言内容を読み上げます。")]
+                public bool GMEnabled { get { return _Setting.GMEnabled; } set { _Setting.GMEnabled = value; } }
 
                 // [Category("基本設定")]
                 // [DisplayName("チャットログのあるフォルダを選択")]
