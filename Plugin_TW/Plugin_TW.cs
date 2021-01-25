@@ -39,7 +39,7 @@ namespace Plugin_TW
 
         public string Name { get { return "TWチャット読み上げ"; } }
 
-        public string Version { get { return "2021.01.22"; } }
+        public string Version { get { return "2021.01.26"; } }
 
         public string Caption { get { return "TWチャット読み上げ"; } }
 
@@ -287,6 +287,10 @@ namespace Plugin_TW
         {
             foreach (var include in _Settings.Includes)
             {
+                if (include == String.Empty)
+                {
+                    continue;
+                }
                 if (Regex.IsMatch(content.Text, include))
                 {
                     return true;
@@ -299,6 +303,9 @@ namespace Plugin_TW
         {
             foreach (var exclude in _Settings.Excludes)
             {
+                if (exclude == String.Empty) {
+                    continue;
+                }
                 if (Regex.IsMatch(content.Text, exclude))
                 {
                     return true;
