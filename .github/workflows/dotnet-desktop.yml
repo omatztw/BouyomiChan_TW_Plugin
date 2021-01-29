@@ -80,6 +80,12 @@ jobs:
         url:  https://ftp.vector.co.jp/53/37/2253/BouyomiChan.zip
         target: lib/
     
+    - name: Unzip BouyomiChan
+      shell: bash
+      run: |          
+          unzip "./lib/BouyomiChan.zip" -d ./lib
+          ls
+    
     - name: unzip BouyomiChan  
       uses: montudor/action-zip@v0.1.1
       with:
