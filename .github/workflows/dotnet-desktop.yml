@@ -92,14 +92,6 @@ jobs:
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
       run: msbuild $env:Solution_Name "/t:clean;rebuild" "/p:Configuration=$env:Configuration;Platform=$env:Platforms"
-
-
-    # Upload the MSIX package: https://github.com/marketplace/actions/upload-artifact
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: artifacts
-        path: Plugin_TW\bin\x86\Release\Plugin_TW.dll
     
     - name: Upload release binary
       uses: actions/upload-release-asset@v1.0.2
