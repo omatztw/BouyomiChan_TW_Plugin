@@ -73,6 +73,12 @@ jobs:
       uses: microsoft/setup-msbuild@2008f912f56e61277eefaac6d1888b750582aa16
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    
+    - name: Download BouyomiChan exe
+      uses: suisei-cn/actions-download-file@v1
+      with:
+        url:  https://ftp.vector.co.jp/53/37/2253/BouyomiChan.zip
+        target: lib/ 
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
