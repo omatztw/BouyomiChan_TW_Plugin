@@ -95,4 +95,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: artifacts
-        path: Plugin_TW\bin\${env.Platforms}\${env.Configuration}\Plugin_TW.dll
+        path: Plugin_TW\bin\x86\Release\Plugin_TW.dll
