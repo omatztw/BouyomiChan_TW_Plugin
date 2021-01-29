@@ -39,10 +39,8 @@
 name: .NET Core Desktop
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  release:
+    types: [ created ]
 
 jobs:
 
@@ -61,6 +59,12 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+
+    - name: Get release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -96,3 +100,13 @@ jobs:
       with:
         name: artifacts
         path: Plugin_TW\bin\x86\Release\Plugin_TW.dll
+    
+    - name: Upload release binary
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./Plugin_TW/bin/x86/Release/Plugin_TW.dll
+        asset_name: Plugin_TW.dll
+        asset_content_type: application/octet-stream
