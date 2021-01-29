@@ -78,7 +78,12 @@ jobs:
       uses: suisei-cn/actions-download-file@v1
       with:
         url:  https://ftp.vector.co.jp/53/37/2253/BouyomiChan.zip
-        target: lib/ 
+        target: lib/
+    
+    - name: unzip BouyomiChan  
+    - uses: montudor/action-zip@v0.1.1
+      with:
+        args: unzip -qq .\lib\BouyomiChan.zip -d .\lib
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
