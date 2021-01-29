@@ -84,12 +84,6 @@ jobs:
       shell: bash
       run: |          
           unzip "./lib/BouyomiChan.zip" -d ./lib
-          ls
-    
-    - name: unzip BouyomiChan  
-      uses: montudor/action-zip@v0.1.1
-      with:
-        args: unzip -qq .\lib\BouyomiChan.zip -d .\lib
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
