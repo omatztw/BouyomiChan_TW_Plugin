@@ -81,6 +81,15 @@ namespace Plugin_TW
         #region ■メソッド・イベント処理
 
         /// <summary>
+        /// デバッグログを追加。Debugでビルドした場合に表示されるログ。
+        /// </summary>
+        /// <param name="message"></param>
+        private void LogError(string message)
+        {
+            Log.AddDebug(Base.CallAsmName, message, LogType.Error);
+        }
+
+        /// <summary>
         /// チャットログがXML形式になっていないので、XML形式に変換する
         /// </summary>
         /// <param name="line"></param>
@@ -157,7 +166,7 @@ namespace Plugin_TW
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    LogError(e.Message);
                 }
 
             }
@@ -345,7 +354,7 @@ namespace Plugin_TW
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                LogError(e.Message);
             }
             return lines;
 
