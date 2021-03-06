@@ -39,7 +39,7 @@ namespace Plugin_TW
 
         public string Name { get { return "TWチャット読み上げ"; } }
 
-        public string Version { get { return "2021.01.29"; } }
+        public string Version { get { return "2021.03.06"; } }
 
         public string Caption { get { return "TWチャット読み上げ"; } }
 
