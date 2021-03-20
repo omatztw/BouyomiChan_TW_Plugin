@@ -9,6 +9,11 @@ using System.Linq;
 using FNF.Utility;
 using FNF.XmlSerializerSetting;
 using FNF.BouyomiChanApp;
+using System.Net;
+using System.Web.Script.Serialization;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.Windows.Forms;
 
 namespace Plugin_TW
 {
@@ -39,7 +44,16 @@ namespace Plugin_TW
 
         public string Name { get { return "TWチャット読み上げ"; } }
 
-        public string Version { get { return "2021.03.06"; } }
+        public string Version { 
+            get {
+                String ver = "2021.03.20";
+#if DEBUG
+                ver += "-debug";
+
+#endif
+                return ver; 
+            } 
+        }
 
         public string Caption { get { return "TWチャット読み上げ"; } }
 
@@ -54,6 +68,9 @@ namespace Plugin_TW
             _SettingFormData = new SettingFormData_TW(_Settings);
             // 最初は全部読みポジションを最後に設定しておく
             _CurrentPosition = GetFileLength(GetChatLogFileName());
+
+            // 棒読みちゃんで読み上げられた時に発行されるイベントハンドラ
+            // Pub.FormMain.BC.TalkTaskStarted += new EventHandler<BouyomiChan.TalkTaskStartedEventArgs>(BC_TalkTaskStarted);
 
             //タイマ登録
             _Timer = new System.Threading.Timer(Timer_Event, null, 0, 1000);
@@ -79,6 +96,14 @@ namespace Plugin_TW
 
 
         #region ■メソッド・イベント処理
+
+        // 棒読みちゃんで読み上げられた時に発行されるイベント実装
+        //private void BC_TalkTaskStarted(object sender, BouyomiChan.TalkTaskStartedEventArgs eve)
+        //{
+        //    LogError(eve.TalkTask.SourceText.ToString());
+            
+
+        //}
 
         /// <summary>
         /// デバッグログを追加。Debugでビルドした場合に表示されるログ。
@@ -152,7 +177,15 @@ namespace Plugin_TW
                 {
                     Message message = DeserializeToMessage(ConvertLineToXml(line));
                     Content[] contents = message.Contents.ToArray();
+                    Content date = contents[0];
                     Content content = contents[1];
+                    String d = date.Text.Replace("[", "").Replace("]", "").Replace(" ", "").Replace("時", ":").Replace("分", ":").Replace("秒", "").Trim();
+                    String setTime = DateTime.Now.ToLongDateString() + " " + d;
+
+                    var task = ExecutedTask(content, setTime);
+                    if (task != null) {
+                        PostTask(task);
+                    }
 
                     if (IsDisplayed(content))
                     {
@@ -170,6 +203,48 @@ namespace Plugin_TW
                 }
 
             }
+        }
+
+        private void PostTask(Task task) {
+            string endpoint = _Settings.EndPointTask;
+            if (endpoint == "")
+            {
+                return;
+            }
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(endpoint);
+            req.ContentType = "application/json";
+            req.Method = "POST";
+
+            using (var streamWriter = new StreamWriter(req.GetRequestStream()))
+            {
+                string jsonPayload = new JavaScriptSerializer().Serialize(new
+                {
+                    name = task.CharName,
+                    col = task.Col,
+                    sheet = task.Sheet,
+                    time = task.Time,
+                    matchStr = task.MatchStr
+                });
+                streamWriter.Write(jsonPayload);
+            }
+
+            HttpWebResponse res = (HttpWebResponse)req.GetResponse();
+            RequestResult result;
+            using (res)
+            {
+                using (var resStream = res.GetResponseStream())
+                {
+                    var serializer = new DataContractJsonSerializer(typeof(RequestResult));
+                    result = (RequestResult)serializer.ReadObject(resStream);
+                }
+            }
+        }
+
+        [DataContract]
+        public class RequestResult
+        {
+            [DataMember]
+            public string message { get; set; }
         }
 
         private void CalcSpecialQA(Content content)
@@ -323,6 +398,22 @@ namespace Plugin_TW
             return false;
         }
 
+        private Task ExecutedTask(Content content, String time)
+        {
+            foreach (var task in _Settings.TaskWords) {
+                if (Regex.IsMatch(content.Text, task.MatchStr)) {
+                    CharInfo charInfo = GetCurrentCharInfo();
+                    string charName = charInfo.CharName;
+                    task.CharName = charName;
+                    task.Time = time;
+                    return task;
+                }
+            }
+            return null;
+        }
+
+
+
         /// <summary>
         /// 最後に読み込んだ箇所から新規追加された文章を読み込む
         /// </summary>
@@ -397,10 +488,10 @@ namespace Plugin_TW
         }
 
 
-        #endregion
+#endregion
 
 
-        #region ■クラス・構造体
+#region ■クラス・構造体
 
 
         // 設定クラス
@@ -416,10 +507,11 @@ namespace Plugin_TW
             public bool AdminEnabled = false;
             public bool OwnChatEnabled = true;
             public bool ReadSpeakerName = true;
-            // public string ChatLogDir = @"C:\Nexon\TalesWeaver\ChatLog";
             public string RootDir = @"C:\Nexon\TalesWeaver";
             public string[] Includes = new string[] { };
             public string[] Excludes = new string[] { };
+            public List<Task> TaskWords = new List<Task>();
+            public string EndPointTask = @"";
 
             //作成元プラグイン
             internal Plugin_TW Plugin;
@@ -507,11 +599,6 @@ namespace Plugin_TW
                 [Description("GMの発言内容を読み上げます。")]
                 public bool GMEnabled { get { return _Setting.GMEnabled; } set { _Setting.GMEnabled = value; } }
 
-                // [Category("基本設定")]
-                // [DisplayName("チャットログのあるフォルダを選択")]
-                // [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
-                // public string ChatLogDir { get { return _Setting.ChatLogDir; } set { _Setting.ChatLogDir = value; } }
-
                 [Category("基本設定")]
                 [DisplayName("00) TWフォルダを選択")]
                 [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
@@ -528,13 +615,45 @@ namespace Plugin_TW
                 [Description("除外するワードを設定します。")]
                 public string[] Excludes { get { return _Setting.Excludes; } set { _Setting.Excludes = value; } }
 
+                [Category("WebHook設定")]
+                [DisplayName("日課管理シート")]
+                [Description("日課管理用シートのエンドポイントを設定します。")]
+                public string EndPointTask { get { return _Setting.EndPointTask; } set { _Setting.EndPointTask = value; } }
+
+
+                [Category("課題設定")]
+                [DisplayName("課題文字列の設定")]
+                [Description("課題の文字列と列番号を指定")]
+                public string[] TaskWords { get {
+                        var list = new List<string>();
+                        foreach (var task in _Setting.TaskWords)
+                        {
+                            list.Add(task.MatchStr + '/' + task.Sheet + '/' + task.Col.ToString());
+                        }
+                        return list.ToArray();
+                    } set {
+                        _Setting.TaskWords = ExtractTask(value);
+
+                    } 
+                }
+
+
+                private List<Task> ExtractTask(string[] tasks)
+                {
+                    var ret = new List<Task>();
+                    foreach (var str in tasks)
+                    {
+                        string[] arr = str.Split('/');
+                        var task = new Task();
+                        task.MatchStr = arr[0];
+                        task.Col = int.Parse(arr[2]);
+                        task.Sheet = arr[1];
+                        ret.Add(task);
+                    }
+                    return ret;
+                }
+
             }
-        }
-
-        public class Word
-        {
-            public string value { get; set; }
-
         }
 
         [System.Xml.Serialization.XmlRoot("message")]
@@ -563,6 +682,19 @@ namespace Plugin_TW
             public string CharName { get; set; }
         }
 
-        #endregion
+        public class Task
+        {
+            public string MatchStr { get; set; }
+
+            public int Col { get; set; }
+
+            public string Sheet { get; set; }
+
+            public string CharName { get; set; }
+
+            public string Time { get; set; }
+        }
+
+#endregion
     }
 }
