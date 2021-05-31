@@ -84,7 +84,7 @@ namespace Plugin_TW
 
         public string Version { 
             get {
-                String ver = "2021.03.20";
+                String ver = "2021.05.31";
 #if DEBUG
                 ver += "-debug";
 
