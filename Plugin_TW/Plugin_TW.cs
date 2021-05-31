@@ -26,6 +26,9 @@ namespace Plugin_TW
         private string _SettingFile = Base.CallAsmPath + Base.CallAsmName + ".setting"; //設定ファイルの保存場所
         private System.Threading.Timer _Timer;
         private long _CurrentPosition = 0;
+        private List<MapType> _SdtMapList = new List<MapType>();
+        private bool outputReady = false;
+        private bool postAlready = false;
 
         private const string CLUB_COLOR = @"#94ddfa";
         private const string TEAM_COLOR = @"#f7b73c";
@@ -35,6 +38,41 @@ namespace Plugin_TW
         private const string GM_COLOR = @"#c8ffff";
         private const string DM_COLOR = @"#64ff64";
         private const string MANAGEMENT_COLOR = @"#64ff80";
+
+        /*
+            Boss,
+            Slot,
+            Lever,
+            Brain,
+            Maze,
+            Tombstone,
+            FourExit,
+            Exit,
+            Toge,
+            TreeFire,
+            TreeBow,
+            ThreeBoss,
+            Ghost,
+            Belesis
+         */
+
+        private Dictionary<string, MapType> MapDic = new Dictionary<string, MapType>()
+        {
+             { "マップの奥にいるボスモンスターを退治してください。", MapType.Boss }
+            ,{ "になるように数字カードを見つけて中央の装置に投入して下さい。", MapType.Slot}
+            ,{ "一人が複数のレバーを引いてもカウントされます", MapType.Lever}
+            ,{ "マップ中央のボタンの上に乗せてください。", MapType.Brain}
+            ,{ "無造作に爆発する地点を避けて中央部にある目的地に到達してください", MapType.Maze}
+            ,{ "マップ中央の碑石の上に乗ってください", MapType.Tombstone}
+            ,{ "自分に付与された数字と一致する出口を見つけてください。", MapType.FourExit}
+            ,{ "新しい脱出装置が生成されました。脱出装置は一定時間が経つと消えます。", MapType.Exit}
+            ,{ "変異したトゲリーナ探し", MapType.Toge}
+            ,{ "降り注ぐ矢を避けてメンバー全員が各部屋の中央に乗ってください。", MapType.TreeBow}
+            ,{ "降り注ぐ炎を避けてメンバー全員が各部屋の中央に乗ってください。", MapType.TreeFire}
+            ,{ "散らばっている3匹のボスを見つけて全て退治してください。", MapType.ThreeBoss}
+            ,{ "見えない幽霊を避けて左下にある目的地に到達してください。", MapType.Ghost}
+            ,{ "[古代ベレシス]の攻撃から", MapType.Belesis}
+        };
 
 
         #endregion
@@ -182,6 +220,15 @@ namespace Plugin_TW
                     String d = date.Text.Replace("[", "").Replace("]", "").Replace(" ", "").Replace("時", ":").Replace("分", ":").Replace("秒", "").Trim();
                     String setTime = DateTime.Now.ToLongDateString() + " " + d;
 
+                    if(_Settings.SdtEnabled)
+                    {
+                        AddSdt(content);
+                        if(!postAlready && outputReady)
+                        {
+                            PostStd();
+                        }
+                    }
+
                     var task = ExecutedTask(content, setTime);
                     if (task != null) {
                         PostTask(task);
@@ -236,6 +283,48 @@ namespace Plugin_TW
                 {
                     var serializer = new DataContractJsonSerializer(typeof(RequestResult));
                     result = (RequestResult)serializer.ReadObject(resStream);
+                }
+            }
+        }
+
+        private void PostStd()
+        {
+            string endpoint = _Settings.SdtDiscordWebhook;
+            if (endpoint == "")
+            {
+                return;
+            }
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(endpoint);
+            req.ContentType = "application/json";
+            req.Method = "POST";
+            _SdtMapList.RemoveAt(_SdtMapList.Count - 1);
+            string joinedString = "■争奪マップ順番\n```\n";
+            joinedString += string.Join("\n", _SdtMapList.Select(s => s.GetStringValue()).ToArray());
+            joinedString += "\n```";
+            using (var streamWriter = new StreamWriter(req.GetRequestStream()))
+            {
+
+
+                string jsonPayload = new JavaScriptSerializer().Serialize(new
+                {
+                    content = joinedString
+                });
+                streamWriter.Write(jsonPayload);
+            }
+
+            HttpWebResponse res = (HttpWebResponse)req.GetResponse();
+            RequestResult result;
+            if(res.StatusCode == HttpStatusCode.NoContent)
+            {
+                postAlready = true;
+            }
+            using (res)
+            {
+                using (var resStream = res.GetResponseStream())
+                {
+                    var serializer = new DataContractJsonSerializer(typeof(RequestResult));
+                    result = (RequestResult)serializer.ReadObject(resStream);
+                    
                 }
             }
         }
@@ -487,11 +576,52 @@ namespace Plugin_TW
 
         }
 
+        private void InitSdtMap()
+        {
+            _SdtMapList = new List<MapType>();
+            outputReady = false;
+            postAlready = false;
+        }
 
-#endregion
+        private void AddSdt(Content content)
+        {
+            if(IsSystem(content) && content.Text.Trim().Contains("アバンドンロード争奪戦が開始しました。"))
+            {
+                InitSdtMap();
+            }
+            if(!outputReady)
+            {
+                foreach(var pair in MapDic)
+                {
+                    if (IsSystem(content) && content.Text.Trim().Contains(pair.Key))
+                    {
+                        _SdtMapList.Add(pair.Value);
+                        if(pair.Value == MapType.Boss)
+                        {
+                            var count = _SdtMapList.Count(n => n == MapType.Boss);
+                            if (count >= 7)
+                            {
+                                outputReady = true;
+                            }
+                        } else
+                        {
+                            var count = _SdtMapList.Count(n => n == pair.Value);
+                            if(count >= 2)
+                            {
+                                outputReady = true;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
 
 
-#region ■クラス・構造体
+        #endregion
+
+
+        #region ■クラス・構造体
 
 
         // 設定クラス
@@ -512,6 +642,10 @@ namespace Plugin_TW
             public string[] Excludes = new string[] { };
             public List<Task> TaskWords = new List<Task>();
             public string EndPointTask = @"";
+
+            // 争奪戦
+            public bool SdtEnabled = false;
+            public string SdtDiscordWebhook = @"";
 
             //作成元プラグイン
             internal Plugin_TW Plugin;
@@ -638,6 +772,17 @@ namespace Plugin_TW
                 }
 
 
+                [Category("争奪戦設定")]
+                [DisplayName("01) 争奪戦の読み上げを有効にする")]
+                [Description("争奪戦の読み上げを有効にする")]
+                public bool SdtEnabled { get { return _Setting.SdtEnabled; } set { _Setting.SdtEnabled = value; } }
+
+                [Category("争奪戦設定")]
+                [DisplayName("02) Discord Webhook")]
+                [Description("争奪戦情報を送信するDiscordのWebhook URL")]
+                public string SdtDiscordWebhook { get { return _Setting.SdtDiscordWebhook; } set { _Setting.SdtDiscordWebhook = value; } }
+
+
                 private List<Task> ExtractTask(string[] tasks)
                 {
                     var ret = new List<Task>();
@@ -693,6 +838,38 @@ namespace Plugin_TW
             public string CharName { get; set; }
 
             public string Time { get; set; }
+        }
+
+        public enum MapType
+        {
+            [StringValue("ボス")]
+            Boss,
+            [StringValue("スロット")]
+            Slot,
+            [StringValue("レバー")]
+            Lever,
+            [StringValue("脳みそ")]
+            Brain,
+            [StringValue("迷路")]
+            Maze,
+            [StringValue("墓碑")]
+            Tombstone,
+            [StringValue("4か所出口")]
+            FourExit,
+            [StringValue("脱出装置")]
+            Exit,
+            [StringValue("トゲ")]
+            Toge,
+            [StringValue("3方向炎")]
+            TreeFire,
+            [StringValue("3方向矢")]
+            TreeBow,
+            [StringValue("3ボス")]
+            ThreeBoss,
+            [StringValue("幽霊")]
+            Ghost,
+            [StringValue("ベレシス")]
+            Belesis
         }
 
 #endregion
