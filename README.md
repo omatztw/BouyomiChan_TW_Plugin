@@ -97,7 +97,6 @@ Tales Weaverのチャットログを棒読みちゃんに読ませるプラグ�
 ## Developer
 
 * テイルズウィーバー エルフィンタ鯖 「おまつ先生」
-    * 開発者へのお問い合わせは、[Discord](https://discord.gg/ksFC4rP)までどうぞ(=ﾟωﾟ)
     * またはゲーム内のチャットでも
     * Twitterも始めました [@omatztw](https://twitter.com/omatztw)
 
